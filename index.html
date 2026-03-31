@@ -1,1 +1,764 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AT 1段階進度診断</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: rgba(255, 255, 255, 0.88);
+      --card-solid: #ffffff;
+      --text: #1c2430;
+      --sub: #667085;
+      --line: #d8e0ec;
+      --primary: #1f4fa3;
+      --primary-soft: #edf4ff;
+      --danger: #c62839;
+      --danger-soft: #fff2f4;
+      --success: #1e7a4f;
+      --success-soft: #eef9f2;
+      --shadow: 0 10px 30px rgba(18, 38, 63, 0.08);
+      --radius: 20px;
+      --radius-sm: 14px;
+    }
 
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top left, rgba(31,79,163,0.08), transparent 34%),
+        radial-gradient(circle at top right, rgba(31,79,163,0.05), transparent 26%),
+        var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Hiragino Sans",
+        "Yu Gothic",
+        "Noto Sans JP",
+        "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 24px 14px 48px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(31,79,163,0.95), rgba(40,92,180,0.88));
+      color: #fff;
+      border-radius: 28px;
+      padding: 28px 22px 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -50px;
+      top: -60px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.25;
+      letter-spacing: 0.02em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin: 0;
+      line-height: 1.8;
+      font-size: 14px;
+      color: rgba(255,255,255,0.92);
+      position: relative;
+      z-index: 1;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .desc {
+      margin: 0 0 14px;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .section {
+      margin-top: 16px;
+    }
+
+    .label {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+      gap: 8px;
+    }
+
+    .count-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+      gap: 8px;
+    }
+
+    .choice-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.16s ease;
+      box-shadow: 0 1px 0 rgba(16,24,40,0.02);
+    }
+
+    .choice-btn:hover {
+      transform: translateY(-1px);
+      border-color: #b9c7de;
+    }
+
+    .choice-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 8px 18px rgba(31,79,163,0.22);
+    }
+
+    .mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .mini-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .mini-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .selected-box {
+      margin-top: 10px;
+      border: 1px solid #e3e9f3;
+      background: #f8fbff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: #334155;
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 24px;
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 14px;
+      font-size: 16px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: 0.15s ease;
+    }
+
+    .input:focus {
+      border-color: #96aed8;
+      box-shadow: 0 0 0 4px rgba(31,79,163,0.08);
+    }
+
+    .note {
+      margin-top: 8px;
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .submit-wrap {
+      margin-top: 20px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      appearance: none;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #1f4fa3, #2d63c3);
+      color: #fff;
+      padding: 16px 18px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(31,79,163,0.24);
+      transition: 0.16s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .loading,
+    .error {
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+      display: none;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      background: var(--card-solid);
+      border: 1px solid #e5ebf5;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .result-head {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid #edf2f8;
+      background: linear-gradient(180deg, #fbfdff, #f7faff);
+    }
+
+    .result-title {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: var(--sub);
+      font-weight: 700;
+    }
+
+    .result-main {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.3;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .shortest-box {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--primary-soft);
+      border: 1px solid #d7e6ff;
+      font-weight: 700;
+      color: #244b87;
+    }
+
+    .result-body {
+      padding: 18px;
+    }
+
+    .info-card {
+      border: 1px solid #e9eef6;
+      background: #fcfdff;
+      border-radius: 16px;
+      padding: 14px 14px;
+      margin-top: 12px;
+    }
+
+    .info-card:first-child {
+      margin-top: 0;
+    }
+
+    .info-title {
+      font-size: 13px;
+      color: var(--sub);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .info-text {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .critical-box {
+      display: none;
+      margin-top: 14px;
+      border: 1px solid #efb4bc;
+      background: var(--danger-soft);
+      border-radius: 18px;
+      padding: 16px 16px;
+    }
+
+    .critical-box h3 {
+      margin: 0 0 8px;
+      color: var(--danger);
+      font-size: 15px;
+    }
+
+    .critical-box ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--danger);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .normal-box {
+      margin-top: 14px;
+      border: 1px solid #dce8f9;
+      background: #f7fbff;
+      border-radius: 18px;
+      padding: 16px 16px;
+    }
+
+    .normal-box h3 {
+      margin: 0 0 8px;
+      color: #254c89;
+      font-size: 15px;
+    }
+
+    .normal-box ul {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .footnote {
+      margin-top: 16px;
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    @media (min-width: 860px) {
+      .grid.two {
+        grid-template-columns: 1.08fr 0.92fr;
+        align-items: start;
+      }
+
+      .hero {
+        padding: 34px 28px 30px;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>AT 1段階進度診断</h1>
+      <p>
+        現在の回数・実施項目・復習項目・手持ち予約数から、
+        1段階修了までの目安を確認できます。<br>
+        学科受講、仮免前効果測定、予約数確認の参考としてご利用ください。
+      </p>
+    </section>
+
+    <div class="grid two">
+      <section class="card">
+        <h2>診断入力</h2>
+        <p class="desc">
+          ご自身の進行状況に近い内容を選択してください。<br>
+          スマートフォンでも押しやすいように、すべてボタン中心にしています。
+        </p>
+
+        <div class="section">
+          <label class="label">1. 現在の回数（何回目か）</label>
+          <div id="lessonCountGrid" class="count-grid"></div>
+          <div class="selected-box">選択中：<span id="lessonCountView">未選択</span></div>
+        </div>
+
+        <div class="section">
+          <label class="label">2. 直近の実施項目</label>
+          <div id="executedGrid" class="button-grid"></div>
+          <div class="mini-actions">
+            <button class="mini-btn" type="button" onclick="clearExecuted()">実施項目をクリア</button>
+          </div>
+          <div class="selected-box">選択中：<span id="executedView">未選択</span></div>
+        </div>
+
+        <div class="section">
+          <label class="label">3. 直近の復習項目</label>
+          <div class="mini-actions">
+            <button id="reviewNoneBtn" class="mini-btn" type="button" onclick="setReviewNone()">復習なし</button>
+            <button class="mini-btn" type="button" onclick="clearReview()">復習項目をクリア</button>
+          </div>
+          <div id="reviewGrid" class="button-grid" style="margin-top:10px;"></div>
+          <div class="note">復習がない場合は「復習なし」を押してください。</div>
+          <div class="selected-box">選択中：<span id="reviewView">復習なし</span></div>
+        </div>
+
+        <div class="section">
+          <label class="label">4. 現在の手持ち予約数（1段階で残っている予約数）</label>
+          <input id="currentReservationCount" class="input" type="number" min="0" placeholder="例：5">
+          <div class="note">
+            現在、1段階で残っているご自身の予約数を入力してください。
+          </div>
+        </div>
+
+        <div class="submit-wrap">
+          <button class="submit-btn" onclick="runDiagnosis()">診断する</button>
+        </div>
+
+        <div id="loading" class="loading">診断中です…</div>
+        <div id="error" class="error"></div>
+      </section>
+
+      <section id="result" class="result">
+        <div class="result-head">
+          <div class="result-title">診断結果</div>
+          <p id="rangeText" class="result-main">目安：あと--回程度</p>
+          <div id="shortestText" class="shortest-box">最短：あと--回</div>
+        </div>
+
+        <div class="result-body">
+          <div class="info-card">
+            <div class="info-title">進行状況</div>
+            <div id="statusText" class="info-text"></div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-title">コメント</div>
+            <div id="commentText" class="info-text"></div>
+          </div>
+
+          <div id="criticalBox" class="critical-box">
+            <h3>重要なご案内</h3>
+            <ul id="criticalAlerts"></ul>
+          </div>
+
+          <div class="normal-box">
+            <h3>ご案内</h3>
+            <ul id="alerts"></ul>
+          </div>
+
+          <div id="noteText" class="footnote"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ----------------------------
+    // GAS直結ではなく、将来のAPI連携を想定したフロント
+    // 今は google.script.run が使える環境ならそのまま利用可
+    // GitHub Pages化する場合は fetch に置き換え
+    // ----------------------------
+
+    let selectedLessonCount = null;
+    let executedItems = [];
+    let reviewItems = [];
+    let reviewNone = true;
+
+    function numberSort(arr) {
+      return [...new Set(arr)].sort((a, b) => a - b);
+    }
+
+    function renderLessonCountButtons() {
+      const grid = document.getElementById('lessonCountGrid');
+      grid.innerHTML = '';
+
+      for (let i = 1; i <= 20; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'choice-btn' + (selectedLessonCount === i ? ' active' : '');
+        btn.textContent = i;
+        btn.onclick = function() {
+          selectedLessonCount = i;
+          renderLessonCountButtons();
+          updateViews();
+        };
+        grid.appendChild(btn);
+      }
+
+      const btn21 = document.createElement('button');
+      btn21.type = 'button';
+      btn21.className = 'choice-btn' + (selectedLessonCount === 21 ? ' active' : '');
+      btn21.textContent = '21+';
+      btn21.onclick = function() {
+        selectedLessonCount = 21;
+        renderLessonCountButtons();
+        updateViews();
+      };
+      grid.appendChild(btn21);
+    }
+
+    function renderExecutedButtons() {
+      const grid = document.getElementById('executedGrid');
+      grid.innerHTML = '';
+
+      for (let i = 1; i <= 22; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'choice-btn' + (executedItems.includes(i) ? ' active' : '');
+        btn.textContent = i;
+        btn.onclick = function() {
+          toggleExecuted(i);
+        };
+        grid.appendChild(btn);
+      }
+    }
+
+    function renderReviewButtons() {
+      const grid = document.getElementById('reviewGrid');
+      grid.innerHTML = '';
+
+      for (let i = 1; i <= 22; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'choice-btn' + (!reviewNone && reviewItems.includes(i) ? ' active' : '');
+        btn.textContent = i;
+        btn.onclick = function() {
+          toggleReview(i);
+        };
+        grid.appendChild(btn);
+      }
+
+      const noneBtn = document.getElementById('reviewNoneBtn');
+      noneBtn.classList.toggle('active', reviewNone);
+    }
+
+    function toggleExecuted(num) {
+      if (executedItems.includes(num)) {
+        executedItems = executedItems.filter(n => n !== num);
+      } else {
+        executedItems.push(num);
+      }
+      executedItems = numberSort(executedItems);
+      renderExecutedButtons();
+      updateViews();
+    }
+
+    function toggleReview(num) {
+      reviewNone = false;
+
+      if (reviewItems.includes(num)) {
+        reviewItems = reviewItems.filter(n => n !== num);
+      } else {
+        reviewItems.push(num);
+      }
+
+      reviewItems = numberSort(reviewItems);
+
+      if (reviewItems.length === 0) {
+        reviewNone = true;
+      }
+
+      renderReviewButtons();
+      updateViews();
+    }
+
+    function setReviewNone() {
+      reviewNone = true;
+      reviewItems = [];
+      renderReviewButtons();
+      updateViews();
+    }
+
+    function clearExecuted() {
+      executedItems = [];
+      renderExecutedButtons();
+      updateViews();
+    }
+
+    function clearReview() {
+      reviewItems = [];
+      reviewNone = true;
+      renderReviewButtons();
+      updateViews();
+    }
+
+    function updateViews() {
+      document.getElementById('lessonCountView').textContent =
+        selectedLessonCount
+          ? (selectedLessonCount === 21 ? '21回以上' : selectedLessonCount + '回目')
+          : '未選択';
+
+      document.getElementById('executedView').textContent =
+        executedItems.length ? executedItems.join(' ') : '未選択';
+
+      document.getElementById('reviewView').textContent =
+        reviewNone ? '復習なし' : (reviewItems.length ? reviewItems.join(' ') : '未選択');
+    }
+
+    function runDiagnosis() {
+      const loading = document.getElementById('loading');
+      const error = document.getElementById('error');
+      const result = document.getElementById('result');
+      const criticalBox = document.getElementById('criticalBox');
+
+      error.style.display = 'none';
+      result.style.display = 'none';
+      criticalBox.style.display = 'none';
+      error.textContent = '';
+
+      if (!selectedLessonCount) {
+        error.textContent = '現在の回数を選択してください。';
+        error.style.display = 'block';
+        return;
+      }
+
+      if (executedItems.length === 0) {
+        error.textContent = '直近の実施項目を選択してください。';
+        error.style.display = 'block';
+        return;
+      }
+
+      const executedText = executedItems.join(' ');
+      const reviewText = reviewNone ? 'なし' : reviewItems.join(' ');
+      const currentReservationCount = document.getElementById('currentReservationCount').value.trim();
+
+      loading.style.display = 'block';
+
+      // Apps Script環境
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            loading.style.display = 'none';
+            renderDiagnosisResult(res);
+          })
+          .withFailureHandler(function(err) {
+            loading.style.display = 'none';
+            error.textContent = 'エラーが発生しました。';
+            error.style.display = 'block';
+            console.error(err);
+          })
+          .diagnoseFromWeb(
+            selectedLessonCount,
+            executedText,
+            reviewText,
+            Number(currentReservationCount || 0)
+          );
+        return;
+      }
+
+      // GitHub Pages化した際はここを fetch に差し替え
+      loading.style.display = 'none';
+      error.textContent = 'この画面はデザイン確認用です。GitHub Pages運用時はAPI連携部分を設定してください。';
+      error.style.display = 'block';
+    }
+
+    function renderDiagnosisResult(res) {
+      const error = document.getElementById('error');
+      const result = document.getElementById('result');
+      const criticalBox = document.getElementById('criticalBox');
+
+      if (!res || !res.ok) {
+        error.textContent = (res && res.message) ? res.message : '診断に失敗しました。';
+        error.style.display = 'block';
+        return;
+      }
+
+      const d = res.diagnosis;
+
+      document.getElementById('rangeText').textContent = d.rangeText;
+      document.getElementById('shortestText').textContent = d.shortestText;
+      document.getElementById('statusText').textContent = d.statusText;
+      document.getElementById('commentText').textContent = d.comment;
+      document.getElementById('noteText').textContent = d.note || '';
+
+      const alertsEl = document.getElementById('alerts');
+      alertsEl.innerHTML = '';
+
+      if (d.alerts && d.alerts.length > 0) {
+        d.alerts.forEach(function(msg) {
+          const li = document.createElement('li');
+          li.textContent = msg;
+          alertsEl.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.textContent = '特に追加のご案内はありません。';
+        alertsEl.appendChild(li);
+      }
+
+      const criticalAlertsEl = document.getElementById('criticalAlerts');
+      criticalAlertsEl.innerHTML = '';
+
+      if (d.criticalAlerts && d.criticalAlerts.length > 0) {
+        d.criticalAlerts.forEach(function(msg) {
+          const li = document.createElement('li');
+          li.textContent = msg;
+          criticalAlertsEl.appendChild(li);
+        });
+        criticalBox.style.display = 'block';
+      } else {
+        criticalBox.style.display = 'none';
+      }
+
+      result.style.display = 'block';
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function init() {
+      renderLessonCountButtons();
+      renderExecutedButtons();
+      renderReviewButtons();
+      updateViews();
+    }
+
+    init();
+  </script>
+</body>
+</html>
