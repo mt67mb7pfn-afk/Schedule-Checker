@@ -255,15 +255,60 @@
       transform: translateY(-1px);
     }
 
-    .loading,
+    .loading {
+      margin-top: 14px;
+      display: none;
+      font-size: 14px;
+      color: #254c89;
+      line-height: 1.7;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .loading.show {
+      display: inline-flex;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2d63c3;
+      opacity: 0.25;
+      animation: loadingBlink 1.2s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes loadingBlink {
+      0%, 80%, 100% {
+        opacity: 0.25;
+        transform: translateY(0);
+      }
+      40% {
+        opacity: 1;
+        transform: translateY(-2px);
+      }
+    }
+
     .error {
       margin-top: 14px;
       font-size: 14px;
       line-height: 1.7;
       display: none;
-    }
-
-    .error {
       color: var(--danger);
     }
 
@@ -401,54 +446,6 @@
       .hero h1 {
         font-size: 32px;
       }
-      .loading {
-  margin-top: 14px;
-  display: none;
-  font-size: 14px;
-  color: #254c89;
-  line-height: 1.7;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-}
-
-.loading.show {
-  display: inline-flex;
-}
-
-.loading-dots {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.loading-dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #2d63c3;
-  opacity: 0.25;
-  animation: loadingBlink 1.2s infinite ease-in-out;
-}
-
-.loading-dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.loading-dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes loadingBlink {
-  0%, 80%, 100% {
-    opacity: 0.25;
-    transform: translateY(0);
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(-2px);
-  }
-}
     }
   </style>
 </head>
@@ -510,13 +507,15 @@
         </div>
 
         <div id="loading" class="loading">
-  <span class="loading-text">診断中です</span>
-  <span class="loading-dots">
-    <span></span>
-    <span></span>
-    <span></span>
-  </span>
-</div>        <div id="error" class="error"></div>
+          <span class="loading-text">診断中です</span>
+          <span class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+
+        <div id="error" class="error"></div>
       </section>
 
       <section id="result" class="result">
@@ -720,7 +719,7 @@
       const currentReservationCount = document.getElementById('currentReservationCount').value.trim();
 
       loading.classList.add('show');
-      
+
       try {
         const res = await callDiagnosisApi({
           lessonCount: selectedLessonCount,
