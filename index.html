@@ -401,6 +401,54 @@
       .hero h1 {
         font-size: 32px;
       }
+      .loading {
+  margin-top: 14px;
+  display: none;
+  font-size: 14px;
+  color: #254c89;
+  line-height: 1.7;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.loading.show {
+  display: inline-flex;
+}
+
+.loading-dots {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2d63c3;
+  opacity: 0.25;
+  animation: loadingBlink 1.2s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loadingBlink {
+  0%, 80%, 100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
     }
   </style>
 </head>
@@ -461,8 +509,14 @@
           <button class="submit-btn" onclick="runDiagnosis()">診断する</button>
         </div>
 
-        <div id="loading" class="loading">診断中です…</div>
-        <div id="error" class="error"></div>
+        <div id="loading" class="loading">
+  <span class="loading-text">診断中です</span>
+  <span class="loading-dots">
+    <span></span>
+    <span></span>
+    <span></span>
+  </span>
+</div>        <div id="error" class="error"></div>
       </section>
 
       <section id="result" class="result">
@@ -665,8 +719,8 @@
       const reviewText = reviewNone ? 'なし' : reviewItems.join(' ');
       const currentReservationCount = document.getElementById('currentReservationCount').value.trim();
 
-      loading.style.display = 'block';
-
+      loading.classList.add('show');
+      
       try {
         const res = await callDiagnosisApi({
           lessonCount: selectedLessonCount,
@@ -675,10 +729,10 @@
           currentReservationCount: Number(currentReservationCount || 0)
         });
 
-        loading.style.display = 'none';
+        loading.classList.remove('show');
         renderDiagnosisResult(res);
       } catch (err) {
-        loading.style.display = 'none';
+        loading.classList.remove('show');
         error.textContent = err && err.message ? err.message : 'エラーが発生しました。';
         error.style.display = 'block';
         console.error(err);
