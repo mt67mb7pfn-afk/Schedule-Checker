@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbya3L5AVdrqSfc9-sp-MF_5FMhY0hk1uySighUG_k_9t6KgExQ19FAwhlVPnlaKxn-z/exec'; 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AT 1段階進度診断</title>
@@ -642,63 +643,52 @@
         reviewNone ? '復習なし' : (reviewItems.length ? reviewItems.join(' ') : '未選択');
     }
 
-    function runDiagnosis() {
-      const loading = document.getElementById('loading');
-      const error = document.getElementById('error');
-      const result = document.getElementById('result');
-      const criticalBox = document.getElementById('criticalBox');
+    async function runDiagnosis() {
+  const loading = document.getElementById('loading');
+  const error = document.getElementById('error');
+  const result = document.getElementById('result');
+  const criticalBox = document.getElementById('criticalBox');
 
-      error.style.display = 'none';
-      result.style.display = 'none';
-      criticalBox.style.display = 'none';
-      error.textContent = '';
+  error.style.display = 'none';
+  result.style.display = 'none';
+  criticalBox.style.display = 'none';
+  error.textContent = '';
 
-      if (!selectedLessonCount) {
-        error.textContent = '現在の回数を選択してください。';
-        error.style.display = 'block';
-        return;
-      }
+  if (!selectedLessonCount) {
+    error.textContent = '現在の回数を選択してください。';
+    error.style.display = 'block';
+    return;
+  }
 
-      if (executedItems.length === 0) {
-        error.textContent = '直近の実施項目を選択してください。';
-        error.style.display = 'block';
-        return;
-      }
+  if (executedItems.length === 0) {
+    error.textContent = '直近の実施項目を選択してください。';
+    error.style.display = 'block';
+    return;
+  }
 
-      const executedText = executedItems.join(' ');
-      const reviewText = reviewNone ? 'なし' : reviewItems.join(' ');
-      const currentReservationCount = document.getElementById('currentReservationCount').value.trim();
+  const executedText = executedItems.join(' ');
+  const reviewText = reviewNone ? 'なし' : reviewItems.join(' ');
+  const currentReservationCount = document.getElementById('currentReservationCount').value.trim();
 
-      loading.style.display = 'block';
+  loading.style.display = 'block';
 
-      // Apps Script環境
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(res) {
-            loading.style.display = 'none';
-            renderDiagnosisResult(res);
-          })
-          .withFailureHandler(function(err) {
-            loading.style.display = 'none';
-            error.textContent = 'エラーが発生しました。';
-            error.style.display = 'block';
-            console.error(err);
-          })
-          .diagnoseFromWeb(
-            selectedLessonCount,
-            executedText,
-            reviewText,
-            Number(currentReservationCount || 0)
-          );
-        return;
-      }
+  try {
+    const res = await callDiagnosisApi({
+      lessonCount: selectedLessonCount,
+      executedItemsText: executedText,
+      reviewItemsText: reviewText,
+      currentReservationCount: Number(currentReservationCount || 0)
+    });
 
-      // GitHub Pages化した際はここを fetch に差し替え
-      loading.style.display = 'none';
-      error.textContent = 'この画面はデザイン確認用です。GitHub Pages運用時はAPI連携部分を設定してください。';
-      error.style.display = 'block';
-    }
-
+    loading.style.display = 'none';
+    renderDiagnosisResult(res);
+  } catch (err) {
+    loading.style.display = 'none';
+    error.textContent = err && err.message ? err.message : 'エラーが発生しました。';
+    error.style.display = 'block';
+    console.error(err);
+  }
+}
     function renderDiagnosisResult(res) {
       const error = document.getElementById('error');
       const result = document.getElementById('result');
@@ -751,7 +741,63 @@
       result.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function init() {
+    function callDiagnosisApi(params) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'diagnosisCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+
+    const query = new URLSearchParams({
+      api: '1',
+      callback: callbackName,
+      lessonCount: String(params.lessonCount || 0),
+      executedItemsText: params.executedItemsText || '',
+      reviewItemsText: params.reviewItemsText || '',
+      currentReservationCount: String(params.currentReservationCount || 0)
+    });
+
+    const script = document.createElement('script');
+    script.src = `${GAS_API_URL}?${query.toString()}`;
+
+    let finished = false;
+
+    window[callbackName] = function(data) {
+      if (finished) return;
+      finished = true;
+
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = function() {
+      if (finished) return;
+      finished = true;
+
+      cleanup();
+      reject(new Error('APIの読み込みに失敗しました。'));
+    };
+
+    const timeout = setTimeout(() => {
+      if (finished) return;
+      finished = true;
+
+      cleanup();
+      reject(new Error('API応答がタイムアウトしました。'));
+    }, 15000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      try {
+        delete window[callbackName];
+      } catch (_) {
+        window[callbackName] = undefined;
+      }
+    }
+
+    document.body.appendChild(script);
+  });
+}    function init() {
       renderLessonCountButtons();
       renderExecutedButtons();
       renderReviewButtons();
