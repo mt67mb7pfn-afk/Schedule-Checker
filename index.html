@@ -740,57 +740,63 @@
     }
 
     function renderDiagnosisResult(res) {
-      const error = document.getElementById('error');
-      const result = document.getElementById('result');
-      const criticalBox = document.getElementById('criticalBox');
+  const error = document.getElementById('error');
+  const result = document.getElementById('result');
+  const criticalBox = document.getElementById('criticalBox');
 
-      if (!res || !res.ok) {
-        error.textContent = (res && res.message) ? res.message : '診断に失敗しました。';
-        error.style.display = 'block';
-        return;
-      }
+  if (!res || !res.ok) {
+    error.textContent = (res && res.message) ? res.message : '診断に失敗しました。';
+    error.style.display = 'block';
+    return;
+  }
 
-      const d = res.diagnosis;
+  if (!res.diagnosis) {
+    error.textContent = '診断データの形式が想定と異なります。';
+    error.style.display = 'block';
+    console.error('response=', res);
+    return;
+  }
 
-      document.getElementById('rangeText').textContent = d.rangeText;
-      document.getElementById('shortestText').textContent = d.shortestText;
-      document.getElementById('statusText').textContent = d.statusText;
-      document.getElementById('commentText').textContent = d.comment;
-      document.getElementById('noteText').textContent = d.note || '';
+  const d = res.diagnosis;
 
-      const alertsEl = document.getElementById('alerts');
-      alertsEl.innerHTML = '';
+  document.getElementById('rangeText').textContent = d.rangeText || '';
+  document.getElementById('shortestText').textContent = d.shortestText || '';
+  document.getElementById('statusText').textContent = d.statusText || '';
+  document.getElementById('commentText').textContent = d.comment || '';
+  document.getElementById('noteText').textContent = d.note || '';
 
-      if (d.alerts && d.alerts.length > 0) {
-        d.alerts.forEach(function(msg) {
-          const li = document.createElement('li');
-          li.textContent = msg;
-          alertsEl.appendChild(li);
-        });
-      } else {
-        const li = document.createElement('li');
-        li.textContent = '特に追加のご案内はありません。';
-        alertsEl.appendChild(li);
-      }
+  const alertsEl = document.getElementById('alerts');
+  alertsEl.innerHTML = '';
 
-      const criticalAlertsEl = document.getElementById('criticalAlerts');
-      criticalAlertsEl.innerHTML = '';
+  if (d.alerts && d.alerts.length > 0) {
+    d.alerts.forEach(function(msg) {
+      const li = document.createElement('li');
+      li.textContent = msg;
+      alertsEl.appendChild(li);
+    });
+  } else {
+    const li = document.createElement('li');
+    li.textContent = '特に追加のご案内はありません。';
+    alertsEl.appendChild(li);
+  }
 
-      if (d.criticalAlerts && d.criticalAlerts.length > 0) {
-        d.criticalAlerts.forEach(function(msg) {
-          const li = document.createElement('li');
-          li.textContent = msg;
-          criticalAlertsEl.appendChild(li);
-        });
-        criticalBox.style.display = 'block';
-      } else {
-        criticalBox.style.display = 'none';
-      }
+  const criticalAlertsEl = document.getElementById('criticalAlerts');
+  criticalAlertsEl.innerHTML = '';
 
-      result.style.display = 'block';
-      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  if (d.criticalAlerts && d.criticalAlerts.length > 0) {
+    d.criticalAlerts.forEach(function(msg) {
+      const li = document.createElement('li');
+      li.textContent = msg;
+      criticalAlertsEl.appendChild(li);
+    });
+    criticalBox.style.display = 'block';
+  } else {
+    criticalBox.style.display = 'none';
+  }
 
+  result.style.display = 'block';
+  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
     function callDiagnosisApi(params) {
       return new Promise((resolve, reject) => {
         const callbackName = 'diagnosisCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
