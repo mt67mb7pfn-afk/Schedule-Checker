@@ -497,8 +497,7 @@
 
         <div class="section">
           <label class="label">4. 現在の手持ち予約数（1段階で残っている予約数）</label>
-          <input id="currentReservationCount" class="input" type="number" min="0" placeholder="例：5">
-          <div class="note">
+          <input id="currentReservationCount" class="input" type="number" min="0" max="21" placeholder="例：5">          <div class="note">
             現在、1段階で残っているご自身の予約数を入力してください。
           </div>
         </div>
@@ -717,18 +716,19 @@
 
       const executedText = executedItems.join(' ');
       const reviewText = reviewNone ? 'なし' : reviewItems.join(' ');
-      const currentReservationCount = document.getElementById('currentReservationCount').value.trim();
+      let currentReservationCount = Number(document.getElementById('currentReservationCount').value || 0);
 
+if (currentReservationCount > 21) currentReservationCount = 21;
+if (currentReservationCount < 0) currentReservationCount = 0;
       loading.classList.add('show');
 
       try {
         const res = await callDiagnosisApi({
-          lessonCount: selectedLessonCount,
-          executedItemsText: executedText,
-          reviewItemsText: reviewText,
-          currentReservationCount: Number(currentReservationCount || 0)
-        });
-
+  lessonCount: selectedLessonCount,
+  executedItemsText: executedText,
+  reviewItemsText: reviewText,
+  currentReservationCount: currentReservationCount
+});
         loading.classList.remove('show');
         renderDiagnosisResult(res);
       } catch (err) {
