@@ -462,20 +462,53 @@
 
     <div class="grid two">
       <section class="card">
-        <h2>診断入力</h2>
-        <p class="desc">
-          ご自身の進行状況に近い内容を選択してください。<br>
-          スマートフォンでも押しやすいように、すべてボタン中心にしています。
-        </p>
+  <h2>診断入力</h2>
 
-        <div class="section">
-          <label class="label">1. 現在の回数（何回目か）</label>
-          <div id="lessonCountGrid" class="count-grid"></div>
+  <div class="section">
+    <label class="label">1. 現在の回数（何回目か）</label>
+    <div id="lessonCountGrid" class="count-grid"></div>
+    <div class="selected-box">選択中：<span id="lessonCountView">未選択</span></div>
+  </div>
+
+  <div class="section">
+    <label class="label">2. 直近の実施項目（複数選択可）</label>
+    <p class="desc">
+      教習原簿や教習生証を確認し、該当する項目を選択してください。
+    </p>
+    <div id="executedGrid" class="button-grid"></div>
+    <div class="mini-actions">
+      <button class="mini-btn" type="button" onclick="clearExecuted()">実施項目をクリア</button>
+    </div>
+    <div class="selected-box">選択中：<span id="executedView">未選択</span></div>
+  </div>
+
+  <div class="section">
+    <label class="label">3. 直近の復習項目（複数選択可）</label>
+    <p class="desc">
+      復習となった項目を選択してください。
+    </p>
+    <div class="mini-actions">
+      <button id="reviewNoneBtn" class="mini-btn" type="button" onclick="setReviewNone()">復習なし</button>
+      <button class="mini-btn" type="button" onclick="clearReview()">復習項目をクリア</button>
+    </div>
+    <div id="reviewGrid" class="button-grid" style="margin-top:10px;"></div>
+    <div class="note">復習がない場合は「復習なし」を押してください。</div>
+    <div class="selected-box">選択中：<span id="reviewView">復習なし</span></div>
+  </div>
+
+  <div class="section">
+    <label class="label">4. 現在の手持ち予約数（1段階で残っている予約数）</label>
+    <input id="currentReservationCount" class="input" type="number" min="0" placeholder="例：5">
+    <div class="note">
+      現在、1段階で残っているご自身の予約数を入力してください。
+    </div>
+  </div>
+        <div id="lessonCountGrid" class="count-grid"></div>
           <div class="selected-box">選択中：<span id="lessonCountView">未選択</span></div>
         </div>
 
         <div class="section">
-          <label class="label">2. 直近の実施項目</label>
+          
           <div id="executedGrid" class="button-grid"></div>
           <div class="mini-actions">
             <button class="mini-btn" type="button" onclick="clearExecuted()">実施項目をクリア</button>
@@ -484,7 +517,10 @@
         </div>
 
         <div class="section">
-          <label class="label">3. 直近の復習項目</label>
+          <label class="label">3. 直近の復習項目（複数選択可）</label>
+<p class="desc">
+  復習となった項目を選択してください。
+</p>
           <div class="mini-actions">
             <button id="reviewNoneBtn" class="mini-btn" type="button" onclick="setReviewNone()">復習なし</button>
             <button class="mini-btn" type="button" onclick="clearReview()">復習項目をクリア</button>
