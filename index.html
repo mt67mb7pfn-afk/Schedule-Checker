@@ -963,8 +963,8 @@
           if (finished) return;
           finished = true;
           cleanup();
-          reject(new Error('API応答がタイムアウトしました。'));
-        }, 15000);
+          reject(new Error('初回は少し時間がかかる場合があります。もう一度お試しください。'));
+        }, 30000);
 
         function cleanup() {
           clearTimeout(timeout);
