@@ -16,6 +16,8 @@
       --primary-soft: #edf4ff;
       --danger: #c62839;
       --danger-soft: #fff2f4;
+      --warning: #a56a00;
+      --warning-soft: #fff7e8;
       --success: #1e7a4f;
       --success-soft: #eef9f2;
       --shadow: 0 10px 30px rgba(18, 38, 63, 0.08);
@@ -24,6 +26,7 @@
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
@@ -109,7 +112,7 @@
     }
 
     .card h2 {
-      margin: 0 0 6px;
+      margin: 0 0 4px;
       font-size: 18px;
       line-height: 1.4;
     }
@@ -126,7 +129,7 @@
     }
 
     .desc {
-      margin: 0 0 12px;
+      margin: 0 0 10px;
       color: var(--sub);
       font-size: 13px;
       line-height: 1.7;
@@ -134,9 +137,9 @@
 
     .course-type-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(90px, 1fr));
+      grid-template-columns: repeat(2, minmax(100px, 1fr));
       gap: 10px;
-      max-width: 220px;
+      max-width: 240px;
     }
 
     .course-type-btn {
@@ -145,11 +148,12 @@
       background: #fff;
       color: var(--text);
       border-radius: 14px;
-      padding: 12px 10px;
+      padding: 13px 10px;
       font-size: 15px;
       font-weight: 800;
       cursor: pointer;
       transition: 0.16s ease;
+      position: relative;
     }
 
     .course-type-btn.active {
@@ -157,6 +161,17 @@
       color: #fff;
       border-color: var(--primary);
       box-shadow: 0 8px 18px rgba(31,79,163,0.22);
+    }
+
+    .course-type-btn.active::after {
+      content: "";
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 8px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.85);
     }
 
     .button-grid {
@@ -185,9 +200,11 @@
       box-shadow: 0 1px 0 rgba(16,24,40,0.02);
     }
 
-    .choice-btn:hover {
+    .choice-btn:hover,
+    .mini-btn:hover,
+    .course-type-btn:hover,
+    .submit-btn:hover {
       transform: translateY(-1px);
-      border-color: #b9c7de;
     }
 
     .choice-btn.active {
@@ -195,6 +212,13 @@
       color: #fff;
       border-color: var(--primary);
       box-shadow: 0 8px 18px rgba(31,79,163,0.22);
+    }
+
+    .choice-btn:active,
+    .course-type-btn:active,
+    .submit-btn:active,
+    .mini-btn:active {
+      transform: translateY(1px) scale(0.99);
     }
 
     .mini-actions {
@@ -213,6 +237,7 @@
       padding: 10px 12px;
       font-size: 13px;
       cursor: pointer;
+      transition: 0.16s ease;
     }
 
     .mini-btn.active {
@@ -276,10 +301,6 @@
       cursor: pointer;
       box-shadow: 0 14px 30px rgba(31,79,163,0.24);
       transition: 0.16s ease;
-    }
-
-    .submit-btn:hover {
-      transform: translateY(-1px);
     }
 
     .loading {
@@ -410,6 +431,31 @@
       white-space: pre-line;
     }
 
+    .status-box {
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid #e3e9f3;
+      background: #f8fbff;
+    }
+
+    .status-box.status-ok {
+      background: var(--success-soft);
+      border-color: #cdebd8;
+      color: var(--success);
+    }
+
+    .status-box.status-watch {
+      background: var(--warning-soft);
+      border-color: #f1ddac;
+      color: var(--warning);
+    }
+
+    .status-box.status-alert {
+      background: var(--danger-soft);
+      border-color: #efb4bc;
+      color: var(--danger);
+    }
+
     .critical-box {
       display: none;
       margin-top: 14px;
@@ -496,7 +542,6 @@
         <div class="section">
           <label class="label">0. 教習車種</label>
           <div id="courseTypeGrid" class="course-type-grid"></div>
-          <div class="selected-box">選択中：<span id="courseTypeView">AT</span></div>
         </div>
 
         <div class="section">
@@ -527,17 +572,13 @@
             <button class="mini-btn" type="button" onclick="clearReview()">復習項目をクリア</button>
           </div>
           <div id="reviewGrid" class="button-grid" style="margin-top:10px;"></div>
-          <div class="note">復習がない場合は「復習なし」を押してください。</div>
           <div class="selected-box">選択中：<span id="reviewView">復習なし</span></div>
         </div>
 
         <div class="section">
           <label class="label">4. 現在の手持ち予約数（1段階で残っている予約数）</label>
           <input id="currentReservationCount" class="input" type="number" min="0" max="21" placeholder="例：5">
-          <div class="note">
-            現在、1段階で残っているご自身の予約数を入力してください。
-            ※通常は20回前後です。21回以上は「21」と入力してください。
-          </div>
+          <div class="note">現在、1段階で残っているご自身の予約数を入力してください。※21回以上は「21」と入力してください。</div>
         </div>
 
         <div class="submit-wrap">
@@ -570,7 +611,7 @@
         <div class="result-body">
           <div class="info-card">
             <div class="info-title">進行状況</div>
-            <div id="statusText" class="info-text"></div>
+            <div id="statusText" class="info-text status-box"></div>
           </div>
 
           <div class="info-card">
@@ -619,7 +660,6 @@
         btn.onclick = function() {
           selectedCourseType = type;
           renderCourseTypeButtons();
-          updateViews();
         };
         grid.appendChild(btn);
       });
@@ -740,8 +780,6 @@
     }
 
     function updateViews() {
-      document.getElementById('courseTypeView').textContent = selectedCourseType;
-
       document.getElementById('lessonCountView').textContent =
         selectedLessonCount
           ? (selectedLessonCount === 21 ? '21回以上' : selectedLessonCount + '回目')
@@ -752,6 +790,28 @@
 
       document.getElementById('reviewView').textContent =
         reviewNone ? '復習なし' : (reviewItems.length ? reviewItems.join(' ') : '未選択');
+    }
+
+    function applyStatusStyle(text) {
+      const statusEl = document.getElementById('statusText');
+      statusEl.classList.remove('status-ok', 'status-watch', 'status-alert');
+
+      const t = String(text || '');
+
+      if (t.includes('順調')) {
+        statusEl.classList.add('status-ok');
+        return;
+      }
+
+      if (t.includes('注意') || t.includes('やや')) {
+        statusEl.classList.add('status-watch');
+        return;
+      }
+
+      if (t.includes('遅れ') || t.includes('必要')) {
+        statusEl.classList.add('status-alert');
+        return;
+      }
     }
 
     async function runDiagnosis() {
@@ -830,6 +890,8 @@
       document.getElementById('statusText').textContent = d.statusText || '';
       document.getElementById('commentText').textContent = d.comment || '';
       document.getElementById('noteText').textContent = d.note || '';
+
+      applyStatusStyle(d.statusText || '');
 
       const alertsEl = document.getElementById('alerts');
       alertsEl.innerHTML = '';
