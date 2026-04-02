@@ -132,6 +132,33 @@
       line-height: 1.7;
     }
 
+    .course-type-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(90px, 1fr));
+      gap: 10px;
+      max-width: 220px;
+    }
+
+    .course-type-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 10px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.16s ease;
+    }
+
+    .course-type-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 8px 18px rgba(31,79,163,0.22);
+    }
+
     .button-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
@@ -143,33 +170,7 @@
       grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
       gap: 8px;
     }
-    .course-type-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(90px, 1fr));
-  gap: 10px;
-  max-width: 220px;
-}
 
-.course-type-btn {
-  appearance: none;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--text);
-  border-radius: 14px;
-  padding: 12px 10px;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: 0.16s ease;
-}
-
-.course-type-btn.active {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-  box-shadow: 0 8px 18px rgba(31,79,163,0.22);
-}
-    
     .choice-btn {
       appearance: none;
       border: 1px solid var(--line);
@@ -254,6 +255,7 @@
       color: var(--sub);
       font-size: 12px;
       line-height: 1.7;
+      white-space: pre-line;
     }
 
     .submit-wrap {
@@ -405,6 +407,7 @@
       font-size: 15px;
       line-height: 1.8;
       color: var(--text);
+      white-space: pre-line;
     }
 
     .critical-box {
@@ -456,6 +459,7 @@
       color: var(--sub);
       font-size: 12px;
       line-height: 1.8;
+      white-space: pre-line;
     }
 
     @media (min-width: 860px) {
@@ -490,10 +494,12 @@
         <h2>診断入力</h2>
 
         <div class="section">
-  <label class="label">0. 教習車種</label>
-  <div id="courseTypeGrid" class="course-type-grid"></div>
-  <div class="selected-box">選択中：<span id="courseTypeView">AT</span></div>
-</div>        <div class="section">
+          <label class="label">0. 教習車種</label>
+          <div id="courseTypeGrid" class="course-type-grid"></div>
+          <div class="selected-box">選択中：<span id="courseTypeView">AT</span></div>
+        </div>
+
+        <div class="section">
           <label class="label">1. 現在の回数（何回目か）</label>
           <div id="lessonCountGrid" class="count-grid"></div>
           <div class="selected-box">選択中：<span id="lessonCountView">未選択</span></div>
@@ -527,19 +533,21 @@
 
         <div class="section">
           <label class="label">4. 現在の手持ち予約数（1段階で残っている予約数）</label>
-          <input id="currentReservationCount" class="input" type="number" min="0" max="21" placeholder="例：5">          <div class="note">
+          <input id="currentReservationCount" class="input" type="number" min="0" max="21" placeholder="例：5">
+          <div class="note">
             現在、1段階で残っているご自身の予約数を入力してください。
+            ※通常は20回前後です。21回以上は「21」と入力してください。
           </div>
         </div>
 
         <div class="submit-wrap">
           <button class="submit-btn" onclick="runDiagnosis()">診断する</button>
         </div>
-        
+
         <div class="note">
-  本診断は目安です。実際の教習進度は指導員の判断により前後します。
-</div>
-        
+          本診断は目安です。実際の教習進度は指導員の判断により前後します。
+        </div>
+
         <div id="loading" class="loading">
           <span class="loading-text">診断中です</span>
           <span class="loading-dots">
@@ -590,31 +598,33 @@
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbya3L5AVdrqSfc9-sp-MF_5FMhY0hk1uySighUG_k_9t6KgExQ19FAwhlVPnlaKxn-z/exec';
 
     let selectedCourseType = 'AT';
-let selectedLessonCount = null;
-let executedItems = [];
-let reviewItems = [];
-let reviewNone = true;
+    let selectedLessonCount = null;
+    let executedItems = [];
+    let reviewItems = [];
+    let reviewNone = true;
+
     function numberSort(arr) {
       return [...new Set(arr)].sort((a, b) => a - b);
     }
 
     function renderCourseTypeButtons() {
-  const grid = document.getElementById('courseTypeGrid');
-  grid.innerHTML = '';
+      const grid = document.getElementById('courseTypeGrid');
+      grid.innerHTML = '';
 
-  ['AT', 'MT'].forEach(type => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'course-type-btn' + (selectedCourseType === type ? ' active' : '');
-    btn.textContent = type;
-    btn.onclick = function() {
-      selectedCourseType = type;
-      renderCourseTypeButtons();
-      updateViews();
-    };
-    grid.appendChild(btn);
-  });
-}
+      ['AT', 'MT'].forEach(type => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'course-type-btn' + (selectedCourseType === type ? ' active' : '');
+        btn.textContent = type;
+        btn.onclick = function() {
+          selectedCourseType = type;
+          renderCourseTypeButtons();
+          updateViews();
+        };
+        grid.appendChild(btn);
+      });
+    }
+
     function renderLessonCountButtons() {
       const grid = document.getElementById('lessonCountGrid');
       grid.innerHTML = '';
@@ -731,7 +741,7 @@ let reviewNone = true;
 
     function updateViews() {
       document.getElementById('courseTypeView').textContent = selectedCourseType;
-      
+
       document.getElementById('lessonCountView').textContent =
         selectedLessonCount
           ? (selectedLessonCount === 21 ? '21回以上' : selectedLessonCount + '回目')
@@ -769,20 +779,22 @@ let reviewNone = true;
 
       const executedText = executedItems.join(' ');
       const reviewText = reviewNone ? 'なし' : reviewItems.join(' ');
-      let currentReservationCount = Number(document.getElementById('currentReservationCount').value || 0);
 
-if (currentReservationCount > 21) currentReservationCount = 21;
-if (currentReservationCount < 0) currentReservationCount = 0;
+      let currentReservationCount = Number(document.getElementById('currentReservationCount').value || 0);
+      if (currentReservationCount > 21) currentReservationCount = 21;
+      if (currentReservationCount < 0) currentReservationCount = 0;
+
       loading.classList.add('show');
 
       try {
         const res = await callDiagnosisApi({
-  courseType: selectedCourseType,
-  lessonCount: selectedLessonCount,
-  executedItemsText: executedText,
-  reviewItemsText: reviewText,
-  currentReservationCount: Number(currentReservationCount || 0)
-});
+          courseType: selectedCourseType,
+          lessonCount: selectedLessonCount,
+          executedItemsText: executedText,
+          reviewItemsText: reviewText,
+          currentReservationCount: currentReservationCount
+        });
+
         loading.classList.remove('show');
         renderDiagnosisResult(res);
       } catch (err) {
@@ -794,76 +806,78 @@ if (currentReservationCount < 0) currentReservationCount = 0;
     }
 
     function renderDiagnosisResult(res) {
-  const error = document.getElementById('error');
-  const result = document.getElementById('result');
-  const criticalBox = document.getElementById('criticalBox');
+      const error = document.getElementById('error');
+      const result = document.getElementById('result');
+      const criticalBox = document.getElementById('criticalBox');
 
-  if (!res || !res.ok) {
-    error.textContent = (res && res.message) ? res.message : '診断に失敗しました。';
-    error.style.display = 'block';
-    return;
-  }
+      if (!res || !res.ok) {
+        error.textContent = (res && res.message) ? res.message : '診断に失敗しました。';
+        error.style.display = 'block';
+        return;
+      }
 
-  if (!res.diagnosis) {
-    error.textContent = '診断データの形式が想定と異なります。';
-    error.style.display = 'block';
-    console.error('response=', res);
-    return;
-  }
+      if (!res.diagnosis) {
+        error.textContent = '診断データの形式が想定と異なります。';
+        error.style.display = 'block';
+        console.error('response=', res);
+        return;
+      }
 
-  const d = res.diagnosis;
+      const d = res.diagnosis;
 
-  document.getElementById('rangeText').textContent = d.rangeText || '';
-  document.getElementById('shortestText').textContent = d.shortestText || '';
-  document.getElementById('statusText').textContent = d.statusText || '';
-  document.getElementById('commentText').textContent = d.comment || '';
-  document.getElementById('noteText').textContent = d.note || '';
+      document.getElementById('rangeText').textContent = d.rangeText || '';
+      document.getElementById('shortestText').textContent = d.shortestText || '';
+      document.getElementById('statusText').textContent = d.statusText || '';
+      document.getElementById('commentText').textContent = d.comment || '';
+      document.getElementById('noteText').textContent = d.note || '';
 
-  const alertsEl = document.getElementById('alerts');
-  alertsEl.innerHTML = '';
+      const alertsEl = document.getElementById('alerts');
+      alertsEl.innerHTML = '';
 
-  if (d.alerts && d.alerts.length > 0) {
-    d.alerts.forEach(function(msg) {
-      const li = document.createElement('li');
-      li.textContent = msg;
-      alertsEl.appendChild(li);
-    });
-  } else {
-    const li = document.createElement('li');
-    li.textContent = '特に追加のご案内はありません。';
-    alertsEl.appendChild(li);
-  }
+      if (d.alerts && d.alerts.length > 0) {
+        d.alerts.forEach(function(msg) {
+          const li = document.createElement('li');
+          li.textContent = msg;
+          alertsEl.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.textContent = '特に追加のご案内はありません。';
+        alertsEl.appendChild(li);
+      }
 
-  const criticalAlertsEl = document.getElementById('criticalAlerts');
-  criticalAlertsEl.innerHTML = '';
+      const criticalAlertsEl = document.getElementById('criticalAlerts');
+      criticalAlertsEl.innerHTML = '';
 
-  if (d.criticalAlerts && d.criticalAlerts.length > 0) {
-    d.criticalAlerts.forEach(function(msg) {
-      const li = document.createElement('li');
-      li.textContent = msg;
-      criticalAlertsEl.appendChild(li);
-    });
-    criticalBox.style.display = 'block';
-  } else {
-    criticalBox.style.display = 'none';
-  }
+      if (d.criticalAlerts && d.criticalAlerts.length > 0) {
+        d.criticalAlerts.forEach(function(msg) {
+          const li = document.createElement('li');
+          li.textContent = msg;
+          criticalAlertsEl.appendChild(li);
+        });
+        criticalBox.style.display = 'block';
+      } else {
+        criticalBox.style.display = 'none';
+      }
 
-  result.style.display = 'block';
-  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
+      result.style.display = 'block';
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function callDiagnosisApi(params) {
       return new Promise((resolve, reject) => {
         const callbackName = 'diagnosisCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
 
         const query = new URLSearchParams({
-  api: '1',
-  callback: callbackName,
-  courseType: params.courseType || 'AT',
-  lessonCount: String(params.lessonCount || 0),
-  executedItemsText: params.executedItemsText || '',
-  reviewItemsText: params.reviewItemsText || '',
-  currentReservationCount: String(params.currentReservationCount || 0)
-});
+          api: '1',
+          callback: callbackName,
+          courseType: params.courseType || 'AT',
+          lessonCount: String(params.lessonCount || 0),
+          executedItemsText: params.executedItemsText || '',
+          reviewItemsText: params.reviewItemsText || '',
+          currentReservationCount: String(params.currentReservationCount || 0)
+        });
+
         const script = document.createElement('script');
         script.src = `${GAS_API_URL}?${query.toString()}`;
 
@@ -907,12 +921,13 @@ if (currentReservationCount < 0) currentReservationCount = 0;
     }
 
     function init() {
-  renderCourseTypeButtons();
-  renderLessonCountButtons();
-  renderExecutedButtons();
-  renderReviewButtons();
-  updateViews();
-}
+      renderCourseTypeButtons();
+      renderLessonCountButtons();
+      renderExecutedButtons();
+      renderReviewButtons();
+      updateViews();
+    }
+
     init();
   </script>
 </body>
